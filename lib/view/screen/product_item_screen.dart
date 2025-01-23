@@ -5,8 +5,11 @@ import 'package:foodrecipeapp/constants/colors.dart';
 import 'package:foodrecipeapp/models/product.dart';
 
 class ProductItemScreen extends StatelessWidget {
-  const ProductItemScreen({Key? key, required this.product}) : super(key: key);
+  const ProductItemScreen(
+      {Key? key, required this.product, required this.image})
+      : super(key: key);
   final Product product;
+  final String image;
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +21,7 @@ class ProductItemScreen extends StatelessWidget {
               width: double.infinity,
               child: Image.network(
                 // Modified line
-                "https://nqklowtyxtpsmyoutvhc.supabase.co/storage/v1/object/public/recipes-images/recipe_image_1737619810452.png",
+                image,
                 fit: BoxFit.cover,
                 loadingBuilder: (BuildContext context, Widget child,
                     ImageChunkEvent? loadingProgress) {

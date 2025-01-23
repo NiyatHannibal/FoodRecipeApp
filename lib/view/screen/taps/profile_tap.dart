@@ -16,8 +16,7 @@ class ProfileTap extends StatefulWidget {
 class _ProfileTapState extends State<ProfileTap> {
   List<Product> _products = [];
   bool _isLoading = true;
-  String userName = "niyat";
-  String profileImage = "assets/images/Avatar2.png";
+  String userName = " ";
   final supabase = Supabase.instance.client;
 
   Future<void> _fetchData() async {
@@ -38,15 +37,12 @@ class _ProfileTapState extends State<ProfileTap> {
           if (userDetails != null) {
             setState(() {
               userName = userDetails['name'] ?? "User";
-              profileImage =
-                  userDetails['profile_image'] ?? "assets/images/Avatar2.png";
             });
           }
         } else {
           print("No user data found for id: ${user.id}");
           setState(() {
             userName = "User";
-            profileImage = "assets/images/Avatar2.png";
           });
         }
 
@@ -97,13 +93,9 @@ class _ProfileTapState extends State<ProfileTap> {
                             alignment: Alignment.bottomRight,
                             children: [
                               CircleAvatar(
-                                radius: 50,
-                                backgroundImage:
-                                    profileImage.startsWith('assets')
-                                        ? AssetImage(profileImage)
-                                        : NetworkImage(profileImage)
-                                            as ImageProvider,
-                              ),
+                                  radius: 50,
+                                  backgroundImage: AssetImage(
+                                      'assets/images/Avatar - Copy.png')),
                             ],
                           ),
                           Padding(
