@@ -76,6 +76,9 @@ class _UploadTapState extends State<UploadTap> {
       final imageName =
           'recipe_image_${DateTime.now().millisecondsSinceEpoch}$imageExt';
 
+      print(
+          "Image file path before upload: ${imageFile.path}"); // Added print statement
+
       await supabase.storage
           .from("recipes-images")
           .upload(imageName, imageFile);
@@ -83,6 +86,9 @@ class _UploadTapState extends State<UploadTap> {
       // Use the public URL instead of signed URL
       final publicUrl =
           supabase.storage.from("recipes-images").getPublicUrl(imageName);
+
+      print(
+          "Returned publicUrl from Supabase: ${publicUrl}"); // Added print statement
 
       return publicUrl;
     } catch (e) {

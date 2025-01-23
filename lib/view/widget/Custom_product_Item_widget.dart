@@ -109,8 +109,10 @@ class CustomProductItemWidget extends StatelessWidget {
                   child: product.productImage.isNotEmpty
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(20),
-                          child: buildRecipeImage(product.productImage))
+                          child: buildRecipeImage(
+                              "https://nqklowtyxtpsmyoutvhc.supabase.co/storage/v1/object/public/recipes-images/recipe_image_1737619810452.png"))
                       : const Center(child: Icon(Icons.image_not_supported)),
+                  // END: REPLACED CHILD PROPERTY
                 )),
           ),
           // Product name

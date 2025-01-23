@@ -11,21 +11,40 @@ class ProductItemScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-        child: Scaffold(
-      body: Stack(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            child: Image.asset(
-              product.productImage,
-              fit: BoxFit.cover,
+      child: Scaffold(
+        body: Stack(
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: Image.network(
+                // Modified line
+                "https://nqklowtyxtpsmyoutvhc.supabase.co/storage/v1/object/public/recipes-images/recipe_image_1737619810452.png",
+                fit: BoxFit.cover,
+                loadingBuilder: (BuildContext context, Widget child,
+                    ImageChunkEvent? loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  );
+                },
+                errorBuilder: (BuildContext context, Object exception,
+                    StackTrace? stackTrace) {
+                  print('Error loading image: $exception');
+                  return const Icon(Icons.error);
+                },
+              ),
             ),
-          ),
-          buttonArrow(context),
-          scroll(context, product),
-        ],
+            buttonArrow(context),
+            scroll(context, product),
+          ],
+        ),
       ),
-    ));
+    );
   }
 
   buttonArrow(BuildContext context) {
@@ -103,16 +122,13 @@ class ProductItemScreen extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      // START: Updated Icon Widget
                       Icon(
-                        //  Icons.icon_name to get the correct icon.
                         product.productTypeIcon == 'timer_outlined'
                             ? Icons.timer_outlined
                             : Icons.error,
                         size: 14.0,
                         color: SecondaryText,
                       ),
-                      // END: Updated Icon Widget
                       const SizedBox(
                         width: 5,
                       ),
@@ -132,7 +148,11 @@ class ProductItemScreen extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 25,
-                        backgroundImage: AssetImage(product.profileImage),
+                        backgroundImage:
+                            product.profileImage.startsWith('assets')
+                                ? AssetImage(product.profileImage)
+                                : NetworkImage(product.profileImage)
+                                    as ImageProvider, // Modified line
                       ),
                       const SizedBox(
                         width: 5,

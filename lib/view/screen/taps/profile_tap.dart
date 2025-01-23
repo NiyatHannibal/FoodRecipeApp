@@ -39,14 +39,14 @@ class _ProfileTapState extends State<ProfileTap> {
             setState(() {
               userName = userDetails['name'] ?? "User";
               profileImage =
-                  userDetails['profile_image'] ?? "assets/images/Avatar.png";
+                  userDetails['profile_image'] ?? "assets/images/Avatar2.png";
             });
           }
         } else {
           print("No user data found for id: ${user.id}");
           setState(() {
             userName = "User";
-            profileImage = "assets/images/Avatar.png";
+            profileImage = "assets/images/Avatar2.png";
           });
         }
 
@@ -98,7 +98,11 @@ class _ProfileTapState extends State<ProfileTap> {
                             children: [
                               CircleAvatar(
                                 radius: 50,
-                                backgroundImage: AssetImage(profileImage),
+                                backgroundImage:
+                                    profileImage.startsWith('assets')
+                                        ? AssetImage(profileImage)
+                                        : NetworkImage(profileImage)
+                                            as ImageProvider,
                               ),
                             ],
                           ),
