@@ -2,14 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:foodrecipeapp/constants/colors.dart';
 
 class CustomCategoriesList extends StatefulWidget {
-  const CustomCategoriesList({Key? key}) : super(key: key);
+  const CustomCategoriesList({Key? key, required this.onCategorySelected})
+      : super(key: key);
+  final Function(String) onCategorySelected;
 
   @override
   State<CustomCategoriesList> createState() => _CustomCategoriesListState();
 }
 
 class _CustomCategoriesListState extends State<CustomCategoriesList> {
-  int _index = 0;
+  int _selectedIndex = 0;
+  List<String> categories = [
+    "All",
+    "Food",
+    "Drink",
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -22,68 +30,51 @@ class _CustomCategoriesListState extends State<CustomCategoriesList> {
             style: Theme.of(context).textTheme.displayMedium,
           ),
         ),
-        Row(
-          children: [
-            menuButton(
+        SizedBox(
+          height: 50,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: categories.length,
+            itemBuilder: (context, index) {
+              return menuButton(
                 onTap: () {
                   setState(() {
-                    _index = 0;
+                    _selectedIndex = index;
                   });
+                  widget.onCategorySelected(categories[index]);
                 },
-                color: _index == 0 ? primary : form,
-                text: "All",
-                textColor: _index == 0 ? Colors.white : SecondaryText,
-                width: _index == 0 ? 65 : 85),
-            menuButton(
-                onTap: () {
-                  setState(() {
-                    _index = 1;
-                  });
-                },
-                color: _index == 1 ? primary : form,
-                text: "Food",
-                textColor: _index == 1 ? Colors.white : SecondaryText,
-                width: _index == 1 ? 65 : 85),
-            menuButton(
-                onTap: () {
-                  setState(() {
-                    _index = 2;
-                  });
-                },
-                color: _index == 2 ? primary : form,
-                text: "Drink",
-                textColor: _index == 2 ? Colors.white : SecondaryText,
-                width: _index == 2 ? 65 : 85),
-          ],
+                isSelected: _selectedIndex == index,
+                text: categories[index],
+              );
+            },
+          ),
         ),
       ],
     );
   }
 
-  menuButton(
-      {required String text,
-      required Color color,
-      required Color textColor,
-      required double width,
-      required VoidCallback onTap}) {
+  Widget menuButton({
+    required String text,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: InkWell(
         onTap: onTap,
         child: Container(
           alignment: Alignment.center,
-          width: width,
+          width: 85,
           height: 45,
           decoration: BoxDecoration(
-            color: color,
+            color: isSelected ? primary : form,
             borderRadius: BorderRadius.circular(30),
           ),
           child: Text(
             text,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium!
-                .copyWith(color: textColor),
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                  color: isSelected ? Colors.white : SecondaryText,
+                ),
           ),
         ),
       ),

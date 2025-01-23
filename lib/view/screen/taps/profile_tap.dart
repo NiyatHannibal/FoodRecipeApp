@@ -1,15 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:foodrecipeapp/constants/colors.dart';
+import 'package:foodrecipeapp/models/product.dart';
 import 'package:foodrecipeapp/view/widget/Custom_product_Item_widget.dart';
-import 'package:foodrecipeapp/view/widget/custom_binary_option.dart';
-import 'package:foodrecipeapp/view/widget/custom_button.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class ProfileTap extends StatelessWidget {
-  ProfileTap({
-    Key? key,
-    this.showFollowBottomInProfile = false,
-  }) : super(key: key);
-  bool showFollowBottomInProfile;
+class ProfileTap extends StatefulWidget {
+  ProfileTap({Key? key, this.product}) : super(key: key);
+
+  final Product? product;
+
+  @override
+  State<ProfileTap> createState() => _ProfileTapState();
+}
+
+class _ProfileTapState extends State<ProfileTap> {
+  List<Product> _products = [];
+  bool _isLoading = true;
+  String userName = "niyat";
+  String profileImage = "assets/images/Avatar2.png";
+  final supabase = Supabase.instance.client;
+
+  Future<void> _fetchData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final user = supabase.auth.currentUser;
+
+      if (user != null) {
+        // Fetch user details first to have user data
+        final userDetailsResponse =
+            await supabase.from('users').select().eq('id', user.id);
+
+        if (userDetailsResponse.isNotEmpty) {
+          final Map<String, dynamic>? userDetails =
+              userDetailsResponse.single; // You can now use `single()` safely
+          if (userDetails != null) {
+            setState(() {
+              userName = userDetails['name'] ?? "User";
+              profileImage =
+                  userDetails['profile_image'] ?? "assets/images/Avatar.png";
+            });
+          }
+        } else {
+          print("No user data found for id: ${user.id}");
+          setState(() {
+            userName = "User";
+            profileImage = "assets/images/Avatar.png";
+          });
+        }
+
+        // Fetch recipes
+        final List<dynamic> recipesData =
+            await supabase.from('recipes').select('*').eq('userId', user.id);
+
+        _products =
+            recipesData.map((recipe) => Product.fromSupabase(recipe)).toList();
+      }
+    } catch (e) {
+      print("Error in fetching data: $e");
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    _fetchData();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,170 +78,96 @@ class ProfileTap extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 20),
-            child: IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.share,
-                color: mainText,
-              ),
-            ),
-          ),
-        ],
-        leading: showFollowBottomInProfile == true
-            ? Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(
-                      Icons.arrow_back_ios,
-                      color: mainText,
-                    )),
-              )
-            : const SizedBox(),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              color: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 55),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Stack(
-                      alignment: Alignment.bottomRight,
-                      children: [
-                        const CircleAvatar(
-                          radius: 50,
-                          backgroundImage:
-                              const AssetImage("assets/imges/Avatar3.png"),
-                        ),
-                        showFollowBottomInProfile == false
-                            ? InkWell(
-                                onTap: () {},
-                                child: const CircleAvatar(
-                                  radius: 12,
-                                  backgroundColor: primary,
-                                  child: Icon(
-                                    Icons.edit,
-                                    size: 15,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              )
-                            : const SizedBox(),
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Text(
-                        "Choirul Syafril",
-                        style: Theme.of(context).textTheme.displayMedium,
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          children: [
-                            Text(
-                              "32",
-                              style: Theme.of(context).textTheme.displayMedium,
-                            ),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            Text(
-                              "Recipes",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleSmall!
-                                  .copyWith(color: SecondaryText),
-                            )
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            Text(
-                              "789",
-                              style: Theme.of(context).textTheme.displayMedium,
-                            ),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            Text(
-                              "Following",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleSmall!
-                                  .copyWith(color: SecondaryText),
-                            )
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            Text(
-                              "1.200",
-                              style: Theme.of(context).textTheme.displayMedium,
-                            ),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            Text(
-                              "Followers",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleSmall!
-                                  .copyWith(color: SecondaryText),
-                            )
-                          ],
-                        ),
-                      ],
-                    ),
-                    showFollowBottomInProfile == true
-                        ? CustomButton(onTap: () {}, text: "Follow")
-                        : const SizedBox(
-                            height: 20,
-                          ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(
-              height: 8,
-            ),
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : SingleChildScrollView(
               child: Column(
                 children: [
-                  CustomBinaryOption(
-                    textLeft: "Recipes",
-                    textRight: "Liked",
+                  Container(
+                    color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 55),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Stack(
+                            alignment: Alignment.bottomRight,
+                            children: [
+                              CircleAvatar(
+                                radius: 50,
+                                backgroundImage: AssetImage(profileImage),
+                              ),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Text(
+                              userName,
+                              style: Theme.of(context).textTheme.displayMedium,
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment:
+                                MainAxisAlignment.center, // Center the Column
+                            children: [
+                              Column(
+                                children: [
+                                  Text(
+                                    _products.length.toString(),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .displayMedium,
+                                  ),
+                                  const SizedBox(
+                                    height: 15,
+                                  ),
+                                  Text(
+                                    "Recipes",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall!
+                                        .copyWith(color: SecondaryText),
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  GridView.count(
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    childAspectRatio: 1 / 1.3,
-                    children: List.generate(
-                        5,
-                        (index) => CustomProductItemWidget(
-                              showUser: false,
-                            )),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      children: [
+                        GridView.count(
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisCount: 2,
+                          shrinkWrap: true,
+                          childAspectRatio: 1 / 1.3,
+                          children: List.generate(
+                              _products.length,
+                              (index) => CustomProductItemWidget(
+                                    showUser: false,
+                                    product: _products[index],
+                                  )),
+                        )
+                      ],
+                    ),
                   )
                 ],
               ),
-            )
-          ],
-        ),
-      ),
+            ),
     );
   }
 }

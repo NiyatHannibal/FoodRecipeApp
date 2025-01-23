@@ -2,11 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:foodrecipeapp/constants/colors.dart';
-import 'package:foodrecipeapp/view/screen/taps/profile_tap.dart';
-import 'package:iconly/iconly.dart';
+import 'package:foodrecipeapp/models/product.dart';
 
 class ProductItemScreen extends StatelessWidget {
-  const ProductItemScreen({Key? key}) : super(key: key);
+  const ProductItemScreen({Key? key, required this.product}) : super(key: key);
+  final Product product;
 
   @override
   Widget build(BuildContext context) {
@@ -16,10 +16,13 @@ class ProductItemScreen extends StatelessWidget {
         children: [
           SizedBox(
             width: double.infinity,
-            child: Image.asset("assets/images/Food Picture.png"),
+            child: Image.asset(
+              product.productImage,
+              fit: BoxFit.cover,
+            ),
           ),
           buttonArrow(context),
-          scroll(),
+          scroll(context, product),
         ],
       ),
     ));
@@ -59,7 +62,7 @@ class ProductItemScreen extends StatelessWidget {
     );
   }
 
-  scroll() {
+  scroll(BuildContext context, Product product) {
     return DraggableScrollableSheet(
         initialChildSize: 0.6,
         maxChildSize: 1.0,
@@ -71,8 +74,7 @@ class ProductItemScreen extends StatelessWidget {
             decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(20),
-                  topRight: const Radius.circular(20)),
+                  topLeft: Radius.circular(20), topRight: Radius.circular(20)),
             ),
             child: SingleChildScrollView(
               controller: scrollController,
@@ -93,68 +95,56 @@ class ProductItemScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "Cacao Maca Walnut Milk",
+                    product.productName,
                     style: Theme.of(context).textTheme.displayMedium,
                   ),
                   const SizedBox(
                     height: 10,
                   ),
-                  Text(
-                    "Food .60 min",
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium!
-                        .copyWith(color: SecondaryText),
+                  Row(
+                    children: [
+                      // START: Updated Icon Widget
+                      Icon(
+                        //  Icons.icon_name to get the correct icon.
+                        product.productTypeIcon == 'timer_outlined'
+                            ? Icons.timer_outlined
+                            : Icons.error,
+                        size: 14.0,
+                        color: SecondaryText,
+                      ),
+                      // END: Updated Icon Widget
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      Text(
+                        product.productTime,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium!
+                            .copyWith(color: SecondaryText),
+                      ),
+                    ],
                   ),
                   const SizedBox(
                     height: 15,
                   ),
                   Row(
                     children: [
-                      InkWell(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ProfileTap(showFollowBottomInProfile: true),
-                              ));
-                        },
-                        child: const CircleAvatar(
-                          radius: 25,
-                          backgroundImage:
-                              AssetImage("assets/images/Avatar3.png"),
-                        ),
+                      CircleAvatar(
+                        radius: 25,
+                        backgroundImage: AssetImage(product.profileImage),
                       ),
                       const SizedBox(
                         width: 5,
                       ),
                       Text(
-                        "Elena Shelby",
+                        product.userName,
                         style: Theme.of(context)
                             .textTheme
                             .displaySmall!
                             .copyWith(color: mainText),
                       ),
                       const Spacer(),
-                      const CircleAvatar(
-                        radius: 25,
-                        backgroundColor: primary,
-                        child: Icon(
-                          IconlyLight.heart,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 5,
-                      ),
-                      Text(
-                        "273 Likes",
-                        style: Theme.of(context)
-                            .textTheme
-                            .displaySmall!
-                            .copyWith(color: mainText),
-                      ),
                     ],
                   ),
                   const Padding(
@@ -171,120 +161,17 @@ class ProductItemScreen extends StatelessWidget {
                     height: 10,
                   ),
                   Text(
-                    'Your recipe has been uploaded, you can see it on your profile. Your recipe has been uploaded, you can see it on your',
+                    product.description ??
+                        'Your recipe has been uploaded, you can see it on your profile. Your recipe has been uploaded, you can see it on your',
                     style: Theme.of(context)
                         .textTheme
                         .bodyMedium!
                         .copyWith(color: SecondaryText),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 15),
-                    child: Divider(
-                      height: 4,
-                    ),
-                  ),
-                  Text(
-                    "Ingredients",
-                    style: Theme.of(context).textTheme.displayLarge,
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  ListView.builder(
-                    physics: NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: 3,
-                    itemBuilder: (context, index) => ingredients(context),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 15),
-                    child: Divider(
-                      height: 4,
-                    ),
-                  ),
-                  Text(
-                    "Steps",
-                    style: Theme.of(context).textTheme.displayLarge,
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  ListView.builder(
-                    physics: NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: 3,
-                    itemBuilder: (context, index) => steps(context, index),
                   ),
                 ],
               ),
             ),
           );
         });
-  }
-
-  ingredients(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 10,
-            backgroundColor: Color(0xFFE3FFF8),
-            child: Icon(
-              Icons.done,
-              size: 15,
-              color: primary,
-            ),
-          ),
-          const SizedBox(
-            width: 10,
-          ),
-          Text(
-            "4 Eggs",
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ],
-      ),
-    );
-  }
-
-  steps(BuildContext context, int index) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          CircleAvatar(
-            backgroundColor: mainText,
-            radius: 12,
-            child: Text("${index + 1}"),
-          ),
-          Column(
-            children: [
-              SizedBox(
-                width: 270,
-                child: Text(
-                  "Your recipe has been uploaded, you can see it on your profile. Your recipe has been uploaded, you can see it on your",
-                  maxLines: 3,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium!
-                      .copyWith(color: mainText),
-                ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Image.asset(
-                "assets/images/Rectangle 219.png",
-                height: 155,
-                width: 270,
-              )
-            ],
-          )
-        ],
-      ),
-    );
   }
 }

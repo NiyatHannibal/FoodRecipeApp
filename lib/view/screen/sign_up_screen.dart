@@ -1,179 +1,195 @@
 import 'package:flutter/material.dart';
 import 'package:foodrecipeapp/constants/colors.dart';
-import 'package:foodrecipeapp/view/screen/verification_code.dart';
+import 'package:foodrecipeapp/view/screen/home_screen.dart';
 import 'package:foodrecipeapp/view/widget/custom_Text_Form_fild.dart';
 import 'package:foodrecipeapp/view/widget/custom_button.dart';
 import 'package:iconly/iconly.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({Key? key}) : super(key: key);
+  const SignUpScreen({super.key});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  // The variable related to showing or hiding the text
-  bool obscure = false;
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _userNameController = TextEditingController();
+  bool _isLoading = false;
+  String _errorMessage = '';
+  final supabase = Supabase.instance.client;
 
-  //The variable key related to the txt field
-  final key = GlobalKey<FormState>();
+  Future<void> _signUpWithEmailAndPassword() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = '';
+      });
 
-  //The validator key related to the text field
-  bool _contansANumber = false;
-  bool _numberofDigits = false;
+      final email = _emailController.text.trim().toLowerCase();
+      final password = _passwordController.text.trim();
+
+      print("Signing up with email: $email");
+      print("Password length: ${password.length}");
+
+      try {
+        final userResponse = await supabase.auth.signUp(
+          email: email,
+          password: password,
+        );
+
+        if (userResponse.user != null) {
+          // Insert user details into the database
+          final response = await supabase.from('users').insert({
+            'id': userResponse.user!.id,
+            'name': _userNameController.text.trim(),
+            'email': email,
+          });
+
+          if (response.error != null) {
+            print('Error inserting data: ${response.error!.message}');
+            setState(() {
+              _errorMessage = response.error!.message;
+            });
+          } else {
+            // Navigate to the HomeScreen if successful
+            if (mounted) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
+              );
+            }
+          }
+        } else {
+          setState(() {
+            _errorMessage = "Sign-up failed. Please try again.";
+          });
+        }
+      } catch (e) {
+        setState(() {
+          _errorMessage = e.toString();
+        });
+        print("Supabase sign-up error: ${e.toString()}");
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _userNameController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-        child: Scaffold(
-      extendBody: true,
-      body: SingleChildScrollView(
-        reverse: true,
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Form(
-                  key: key,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        "Welcome",
-                        style: Theme.of(context).textTheme.displayLarge,
+      child: Scaffold(
+        body: SingleChildScrollView(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            "Create Account",
+                            style: Theme.of(context).textTheme.displayLarge,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              "Please fill in the form below",
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ),
+                          CostomTextFormFild(
+                            controller: _userNameController,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Please enter your name";
+                              }
+                              return null;
+                            },
+                            hint: "User Name",
+                            prefixIcon: IconlyBroken.profile,
+                          ),
+                          CostomTextFormFild(
+                            controller: _emailController,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Please enter your email";
+                              } else if (!RegExp(
+                                      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+                                  .hasMatch(value)) {
+                                return "Please enter a valid email address";
+                              }
+                              return null;
+                            },
+                            hint: "Enter your Email",
+                            prefixIcon: IconlyBroken.message,
+                          ),
+                          CostomTextFormFild(
+                            controller: _passwordController,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Please enter your password";
+                              } else if (value.length < 6) {
+                                return "Password must be at least 6 characters";
+                              }
+                              return null;
+                            },
+                            obscureText: true,
+                            hint: "Password",
+                            prefixIcon: IconlyBroken.lock,
+                          ),
+                          if (_errorMessage.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                _errorMessage,
+                                style: const TextStyle(
+                                    color: Colors.red, fontSize: 14),
+                              ),
+                            ),
+                        ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Text(
-                          "Please enter your account here",
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CustomButton(
+                            text: "Sign Up",
+                            color: primary,
+                            onTap: _signUpWithEmailAndPassword,
+                            isLoading: _isLoading,
+                          ),
+                        ],
                       ),
-                      CostomTextFormFild(
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return "Please enter the email";
-                          } else {
-                            return null;
-                          }
-                        },
-                        hint: "Email or phone number",
-                        prefixIcon: IconlyBroken.message,
-                      ),
-                      CostomTextFormFild(
-                        onChanged: (value) {
-                          setState(() {
-                            _numberofDigits = value.length < 6 ? false : true;
-                          });
-                        },
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return "Please enter the password";
-                          } else {
-                            return null;
-                          }
-                        },
-                        obscureText: obscure,
-                        hint: "Password",
-                        prefixIcon: IconlyBroken.lock,
-                        suffixIcon: obscure == true
-                            ? IconlyBroken.show
-                            : IconlyBroken.hide,
-                        onTapSuffixIcon: () {
-                          setState(() {});
-                          obscure = !obscure;
-                        },
-                      ),
-                      // Part about password terms
-                      passwordTerms(
-                          contains: _contansANumber, atleast6: _numberofDigits),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                CustomButton(
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => VerificationCode(),
-                          ));
-                      setState(() {
-                        key.currentState!.validate();
-                      });
-                    },
-                    text: "Sign Up")
-              ],
+              ),
             ),
           ),
         ),
       ),
-    ));
-  }
-
-  // Part about password terms
-  passwordTerms({
-    required bool contains,
-    required bool atleast6,
-  }) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Text(
-              "Your password must contain :",
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge!
-                  .copyWith(color: mainText),
-            )
-          ],
-        ),
-        const SizedBox(
-          height: 15,
-        ),
-        Row(
-          children: [
-            CircleAvatar(
-              radius: 10,
-              backgroundColor: atleast6 == false ? outline : Color(0xFFE3FFF1),
-              child: Icon(
-                Icons.done,
-                size: 12,
-                color: atleast6 == false ? SecondaryText : primary,
-              ),
-            ),
-            Text(
-              "  Atleast 6 characters",
-              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                  color: atleast6 == false ? SecondaryText : mainText),
-            )
-          ],
-        ),
-        const SizedBox(
-          height: 15,
-        ),
-        Row(
-          children: [
-            CircleAvatar(
-              radius: 10,
-              backgroundColor: contains == false ? outline : Color(0xFFE3FFF1),
-              child: Icon(
-                Icons.done,
-                size: 12,
-                color: contains == false ? SecondaryText : primary,
-              ),
-            ),
-            Text(
-              "  Contains a number",
-              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                  color: contains == false ? SecondaryText : mainText),
-            )
-          ],
-        ),
-      ],
     );
   }
 }

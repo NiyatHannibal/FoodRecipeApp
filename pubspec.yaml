@@ -38,10 +38,23 @@ dependencies:
   iconly:
   pin_code_fields:
   dotted_border:
+  supabase_flutter: ^2.8.3
+  image_picker: ^1.1.2
+  path: ^1.9.0
+
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: "^0.14.3"
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/Onboarding.png"
+
+
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

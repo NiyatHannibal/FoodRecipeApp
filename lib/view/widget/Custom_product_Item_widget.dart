@@ -1,155 +1,123 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:foodrecipeapp/constants/colors.dart';
+import 'package:foodrecipeapp/models/product.dart';
 import 'package:foodrecipeapp/view/screen/product_item_screen.dart';
 import 'package:foodrecipeapp/view/screen/taps/profile_tap.dart';
-import 'package:iconly/iconly.dart';
 
-class CustomProductItemWidget extends StatefulWidget {
-  CustomProductItemWidget({Key? key, this.showUser = true}) : super(key: key);
-  bool showUser;
+class CustomProductItemWidget extends StatelessWidget {
+  CustomProductItemWidget(
+      {Key? key, required this.product, this.showUser = true})
+      : super(key: key);
+  final bool showUser;
+  final Product product;
 
-  @override
-  State<CustomProductItemWidget> createState() =>
-      _CustomProductItemWidgetState();
-}
+  Widget buildRecipeImage(String imageUrl) {
+    print('Image URL (inside buildRecipeImage): $imageUrl');
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover, // Or any other appropriate fit you want
+      loadingBuilder: (BuildContext context, Widget child,
+          ImageChunkEvent? loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Center(
+          child: CircularProgressIndicator(
+            value: loadingProgress.expectedTotalBytes != null
+                ? loadingProgress.cumulativeBytesLoaded /
+                    loadingProgress.expectedTotalBytes!
+                : null,
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) =>
+          Text("Failed to load image"),
+    );
+  }
 
-class _CustomProductItemWidgetState extends State<CustomProductItemWidget> {
-  bool favorite = false;
   @override
   Widget build(BuildContext context) {
+    print('Product Image URL (inside build): ${product.productImage}');
+
     return Container(
       width: 165,
       height: 265,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Name and profile picture
-          widget.showUser == true
-              ? InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ProfileTap(
-                                showFollowBottomInProfile: true,
-                              )),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(2),
-                          clipBehavior: Clip.antiAlias,
-                          child: Image.asset(
-                            "assets/images/Rectangle 196.png",
-                            height: 32,
-                            width: 32,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Text(
-                          "Calum Lewis",
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleSmall!
-                              .copyWith(color: mainText),
-                        ),
-                      ],
+          // Name and profile picture (with navigation to profile)
+          if (showUser)
+            InkWell(
+              // Wrap the profile part with InkWell
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileTap(
+                      product: product, // Send product data
                     ),
                   ),
-                )
-              : const SizedBox(),
-
-          // product image and favorite botton
-          Stack(
-            children: [
-              // Product image
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Container(
-                  alignment: Alignment.centerLeft,
-                  width: 150,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ProductItemScreen()));
-                    },
-                    child: Image.asset(
-                      "assets/images/Rectangle 188.png",
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              ),
-              // Favorite bottom
-              Positioned(
-                top: 20,
-                right: 20,
-                child: Stack(
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Row(
                   children: [
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          favorite = !favorite;
-                        });
-                      },
-                      child: ClipRRect(
-                        clipBehavior: Clip.hardEdge,
-                        child: Container(
-                          clipBehavior: Clip.hardEdge,
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(7)),
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                            child: Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
-                                color: Colors.white.withOpacity(0.10),
-                              ),
-                              child: Center(
-                                child: favorite == false
-                                    ? const Icon(
-                                        IconlyBroken.heart,
-                                        color: Colors.white,
-                                      )
-                                    : const Icon(
-                                        IconlyBold.heart,
-                                        color: Colors.red,
-                                      ),
-                              ),
-                            ),
-                          ),
-                        ),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(2),
+                      clipBehavior: Clip.antiAlias,
+                      child: Image.asset(
+                        product.profileImage,
+                        height: 32,
+                        width: 32,
+                        fit: BoxFit.cover,
                       ),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Text(
+                      product.userName,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall!
+                          .copyWith(color: mainText),
                     ),
                   ],
                 ),
               ),
-            ],
+            ),
+          // Product image
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Container(
+                alignment: Alignment.centerLeft,
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProductItemScreen(
+                          product: product,
+                        ),
+                      ),
+                    );
+                  },
+                  child: product.productImage.isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: buildRecipeImage(product.productImage))
+                      : const Center(child: Icon(Icons.image_not_supported)),
+                )),
           ),
-
-          // product name
+          // Product name
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Text(
-              "Pancake",
+              product.productName,
               style: Theme.of(context).textTheme.displayMedium,
             ),
           ),
@@ -157,15 +125,27 @@ class _CustomProductItemWidgetState extends State<CustomProductItemWidget> {
             height: 5,
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Text(
-              "Food . > 60m",
-              style: Theme.of(context)
-                  .textTheme
-                  .titleSmall!
-                  .copyWith(color: SecondaryText),
-            ),
-          ),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Row(children: [
+                // START: Updated Icon Widget
+                Icon(
+                    product.productTypeIcon == 'timer_outlined'
+                        ? Icons.timer_outlined
+                        : Icons.error,
+                    size: 14.0,
+                    color: SecondaryText),
+                // END: Updated Icon Widget
+                const SizedBox(
+                  width: 5,
+                ),
+                Text(
+                  product.productTime,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall!
+                      .copyWith(color: SecondaryText),
+                ),
+              ])),
         ],
       ),
     );

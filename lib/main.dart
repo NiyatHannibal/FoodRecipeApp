@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:foodrecipeapp/constants/colors.dart';
 import 'package:foodrecipeapp/view/screen/start_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Supabase
+  await Supabase.initialize(
+    url:
+        'https://nqklowtyxtpsmyoutvhc.supabase.co', // Replace with your Supabase URL
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xa2xvd3R5eHRwc215b3V0dmhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc1NTQyMjUsImV4cCI6MjA1MzEzMDIyNX0.5iQK44rsbX7rq2Ctf8lk9vLPwb-NB73T4QtvkBO27t8', // Replace with your Supabase anon key
+  );
+
   runApp(const MyApp());
 }
 
