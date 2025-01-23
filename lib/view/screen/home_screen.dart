@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:foodrecipeapp/constants/colors.dart';
+import 'package:foodrecipeapp/view/screen/sign_in_screen.dart'; // Import the sign-in screen
 import 'package:foodrecipeapp/view/screen/taps/home_tap.dart';
 import 'package:foodrecipeapp/view/screen/taps/profile_tap.dart';
 import 'package:foodrecipeapp/view/screen/taps/upload_tap.dart';
@@ -23,6 +24,24 @@ class _HomeScreenState extends State<HomeScreen> {
           title:
               Text("Discover Recipes", style: TextStyle(color: Colors.white)),
           backgroundColor: primary,
+          actions: [
+            // Added actions for logout
+            TextButton.icon(
+              onPressed: () {
+                Navigator.pushReplacement(
+                    // Use pushReplacement to prevent going back to the home page
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            const SignInScreen())); // Navigate to sign in page
+              },
+              icon: const Icon(
+                IconlyBold.logout,
+                color: Colors.white,
+              ),
+              label: Text("Logout", style: TextStyle(color: Colors.white)),
+            )
+          ],
         ),
         bottomNavigationBar: bottomNavigationBar(),
         body: taps[_currentIndex],

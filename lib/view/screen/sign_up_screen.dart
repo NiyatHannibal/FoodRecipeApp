@@ -18,10 +18,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _userNameController = TextEditingController();
+
   bool _isLoading = false;
   String _errorMessage = '';
   final supabase = Supabase.instance.client;
-
   Future<void> _signUpWithEmailAndPassword() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -31,12 +31,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       final email = _emailController.text.trim().toLowerCase();
       final password = _passwordController.text.trim();
+      final userName = _userNameController.text.trim();
 
       print("Signing up with email: $email");
       print("Password length: ${password.length}");
 
       try {
-        final userResponse = await supabase.auth.signUp(
+        final AuthResponse userResponse = await supabase.auth.signUp(
           email: email,
           password: password,
         );
@@ -45,23 +46,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
           // Insert user details into the database
           final response = await supabase.from('users').insert({
             'id': userResponse.user!.id,
-            'name': _userNameController.text.trim(),
+            'name': userName,
             'email': email,
-          });
+          }).select();
 
-          if (response.error != null) {
-            print('Error inserting data: ${response.error!.message}');
-            setState(() {
-              _errorMessage = response.error!.message;
-            });
-          } else {
-            // Navigate to the HomeScreen if successful
+          if (response != null && response.isNotEmpty) {
             if (mounted) {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const HomeScreen()),
               );
             }
+          } else {
+            setState(() {
+              _errorMessage = "Error inserting data.";
+            });
+            print('Error inserting data: No response returned.');
           }
         } else {
           setState(() {
@@ -86,6 +86,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _userNameController.dispose();
+
     super.dispose();
   }
 

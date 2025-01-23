@@ -21,7 +21,7 @@ class Product {
     required this.description,
   });
 
-  // Supabase from JSON Factory
+// Supabase from JSON Factory
   factory Product.fromSupabase(Map<String, dynamic> json) {
     return Product(
       userName: json['userName'],
@@ -37,7 +37,7 @@ class Product {
     );
   }
 
-  // Supabase to JSON method
+// Supabase to JSON method
   Map<String, dynamic> toJson() {
     return {
       "userName": userName,
